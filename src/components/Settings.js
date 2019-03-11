@@ -60,7 +60,9 @@ class SettingsModal extends React.Component {
   getStuffAsync = (param) => {
     return new Promise(function(resolve,reject){
          bibUtil_to_json.toJson(param, function(err, data){
-            if(err !== null) return reject(err);
+            if(err !== null) {
+              reject(err);
+            }
              resolve(data);
          });
     });
@@ -250,7 +252,7 @@ class SettingsModal extends React.Component {
   openFileDialogRefSetting = (event) => {
     dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
-        filters: [{ name: 'USFM Files', extensions: ['usfm'] }],
+        filters: [{ name: 'USFM Files', extensions: ['*'] }],
         title: "Import Reference"
     }, (selectedDir) => {
         if (selectedDir != null) {
@@ -287,14 +289,25 @@ class SettingsModal extends React.Component {
           targetDb: 'target',
           scriptDirection: AutographaStore.refScriptDirection
         }
-        return this.getStuffAsync(options);
+        return this.getStuffAsync(options).then((res)=> {
+            AutographaStore.successFile.push(res)
+            return res;
+        }).catch((err) => {
+            console.log(err)
+            AutographaStore.errorFile.push(err)
+            return err
+        })
       }
-    }).catch((err) => {
-      const currentTrans = AutographaStore.currentTrans;
-      console.log(err)
-      this.setState({showLoader: false});
-      return swal(currentTrans["dynamic-msg-error"], currentTrans["dynamic-msg-imp-error"], "error");
-    }).finally(() => window.location.reload())
+    }).then((res) => {
+        console.log(res)
+        console.log(AutographaStore.successFile.toString(), AutographaStore.errorFile.toString())
+        //return swal(currentTrans["dynamic-msg-error"], currentTrans["dynamic-msg-imp-error"], "error");
+    })
+    //   const currentTrans = AutographaStore.currentTrans;
+        // console.log(err)
+    //   this.setState({showLoader: false});
+    //   return swal(currentTrans["dynamic-msg-error"], currentTrans["dynamic-msg-imp-error"], "error");
+    // })//.finally(() => window.location.reload())
   }
 
   reference_setting() {

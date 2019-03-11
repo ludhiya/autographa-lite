@@ -63,6 +63,8 @@ export class AutographaStore {
   @observable multipleSpaces = {}
   @observable setDiff = false
   @observable backupOption = "current"
+  @observable successFile = []
+  @observable errorFile = []
 
 
 

@@ -7,6 +7,7 @@ module.exports = {
       All keys of options are required!
       e.g: options = {lang: 'en', version: 'udb', usfmFile: '/home/test-data/L66_1 Corinthians_I.SFM', 'target': 'refs|target'}
     */
+    
 
     toJson: function (options, callback) {
         try {
@@ -26,13 +27,14 @@ module.exports = {
             book["scriptDirection"] = options.scriptDirection;
             book.chapters = [];
         } catch (err) {
-            return callback(new Error('usfm parser error'));
+            return callback(new Error(fileName(options.usfmFile)));
         }
         lineReader.on('line', function (line) {
             // Logic to tell if the input file is a USFM book of the Bible.
             if (!usfmBibleBook)
-                if (validLineCount > 3)
-                    return callback(new Error('not usfm file'))
+                if (validLineCount > 3) {
+                    return callback(new Error(`${fileName(options.usfmFile)} is not valid usfm file`))
+                }
 
             validLineCount++;
             var line = line.trim();
@@ -54,7 +56,7 @@ module.exports = {
                 v = 0;
             } else if (splitLine[0] == '\\v') {
                 if (c == 0)
-                    return callback(new Error("USFM files without chapters aren't supported."));
+                    return callback(new Error(`${fileName(options.usfmFile)}, line No.: ${validLineCount}, USFM files without chapters aren't supported.")`));
                 var verseStr = (splitLine.length <= 2) ? '' : splitLine.splice(2, splitLine.length - 1).join(' ');
                 verseStr = replaceMarkers(verseStr);
                 const bookIndex = booksCodes.findIndex((element) => {
@@ -81,13 +83,14 @@ module.exports = {
                 book.chapters[c - 1].verses[v - 1].verse += ((cleanedStr.length === 0 ? '' : ' ') + cleanedStr);
 
             }
+
         });
 
         lineReader.on('close', function (line) {
 
             if (!usfmBibleBook)
                 // throw new Error('not usfm file');
-                return callback(new Error('not usfm file'))
+                return callback(new Error(`${fileName(options.usfmFile)} is not valid usfm file`))
             /*console.log(book);
               require('fs').writeFileSync('/Users/fox/output.json', JSON.stringify(book), {
               encoding: 'utf8',
@@ -113,13 +116,13 @@ module.exports = {
                     book._rev = doc._rev;
                     book.scriptDirection = options.scriptDirection;
                     refDb.put(book);
-                    return callback(null, "Successfully loaded existing refs")
+                    return callback(null, `${fileName(options.usfmFile)}, Successfully loaded existing refs`)
                 }, (err) => {
                     refDb.put(book).then((doc) => {
-                        return callback(null, "Successfully loaded new refs");
+                        return callback(null, `${fileName(options.usfmFile)}, Successfully loaded new refs`);
                     }, (err) => {
                         // console.log("Error: While loading new refs. " + err);
-                        return callback("Error: While loading new refs. " + err);
+                        return callback(`${fileName(options.usfmFile)} ${lineCount}`);
                     });
                 });
             } else if (options.targetDb === 'target') {
@@ -149,9 +152,9 @@ module.exports = {
                         }
                     }
                     db.put(doc).then((response) => {
-                        return callback(null, response);
+                        return callback(null, fileName(options.usfmFile));
                     }, (err) => {
-                        return callback('Error: While trying to save to DB. ' + err);
+                        return callback(new Error(`${fileName(options.usfmFile)} line no.: ${validLineCount}`));
                     });
                 });
             }
@@ -159,12 +162,16 @@ module.exports = {
 
         lineReader.on('error', function (lineReaderErr) {
             if (lineReaderErr.message === 'not usfm file')
-                return callback(options.usfmFile + ' is not a valid USFM file.')
+                return callback(new Error(fileName(options.usfmFile)))
             else
-                return callback(new Error('usfm parser error'))
+                return callback(new Error(lineReaderErr))
         });
     }
 };
+
+function fileName(file) {
+    return file.substr(file.lastIndexOf("/") + 1);
+}
 
 var patterns = "";
 
