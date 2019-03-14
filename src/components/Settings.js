@@ -311,7 +311,8 @@ class SettingsModal extends React.Component {
       }
     }).then(() => {
         this.setState({showLoader:false});
-        return this.setState({show:true});
+        this.setState({show:true});
+        AutographaStore.showModalSettings = false;
     })//.finally(() => window.location.reload())
     }
 
@@ -434,7 +435,8 @@ class SettingsModal extends React.Component {
       }
     }).then(() => {
         this.setState({showLoader:false});
-        return this.setState({show:true});
+        this.setState({show:true});
+        AutographaStore.showModalSettings = false
     })//.finally(() => window.location.reload())
     }
 
