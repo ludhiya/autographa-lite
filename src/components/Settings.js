@@ -296,7 +296,7 @@ class SettingsModal extends React.Component {
         return this.getStuffAsync(options).then((res)=> {
             this.setState(prevState => ({
                 successFile: [...prevState.successFile, (res)],
-                successTitle: "Files_Imported"
+                successTitle: "Imported_Files"
               }))
             return res;
         }).catch((err) => {
@@ -419,7 +419,7 @@ class SettingsModal extends React.Component {
         return that.getStuffAsync(options).then((res)=> {
             this.setState(prevState => ({
                 successFile: [...prevState.successFile, (res)],
-                successTitle: "Files_Imported"
+                successTitle: "Imported_Files"
               }))
             return res;
         }).catch((err) => {
