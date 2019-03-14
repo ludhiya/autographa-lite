@@ -27,13 +27,13 @@ module.exports = {
             book["scriptDirection"] = options.scriptDirection;
             book.chapters = [];
         } catch (err) {
-            return callback(new Error(fileName(options.usfmFile)));
+            return callback(new Error(`${fileName(options.usfmFile)}: USFM parser error`));
         }
         lineReader.on('line', function (line) {
             // Logic to tell if the input file is a USFM book of the Bible.
             if (!usfmBibleBook)
                 if (validLineCount > 3) {
-                    return callback(new Error(`${fileName(options.usfmFile)} is not valid usfm file`))
+                    return callback(new Error(`${fileName(options.usfmFile)} LineNo_1: USFM files without book_id aren't supported`))
                 }
 
             validLineCount++;
@@ -56,7 +56,7 @@ module.exports = {
                 v = 0;
             } else if (splitLine[0] == '\\v') {
                 if (c == 0)
-                    return callback(new Error(`${fileName(options.usfmFile)}, line No.: ${validLineCount}, USFM files without chapters aren't supported.")`));
+                    return callback(new Error(`${fileName(options.usfmFile)} LineNo_${validLineCount}: USFM files without chapters aren't supported`));
                 var verseStr = (splitLine.length <= 2) ? '' : splitLine.splice(2, splitLine.length - 1).join(' ');
                 verseStr = replaceMarkers(verseStr);
                 const bookIndex = booksCodes.findIndex((element) => {
@@ -90,7 +90,7 @@ module.exports = {
 
             if (!usfmBibleBook)
                 // throw new Error('not usfm file');
-                return callback(new Error(`${fileName(options.usfmFile)} is not valid usfm file`))
+                return callback(new Error(`${fileName(options.usfmFile)}: is not valid usfm file`))
             /*console.log(book);
               require('fs').writeFileSync('/Users/fox/output.json', JSON.stringify(book), {
               encoding: 'utf8',
@@ -116,13 +116,13 @@ module.exports = {
                     book._rev = doc._rev;
                     book.scriptDirection = options.scriptDirection;
                     refDb.put(book);
-                    return callback(null, `${fileName(options.usfmFile)}, Successfully loaded existing refs`)
+                    return callback(null, `${fileName(options.usfmFile)}`)
                 }, (err) => {
                     refDb.put(book).then((doc) => {
-                        return callback(null, `${fileName(options.usfmFile)}, Successfully loaded new refs`);
+                        return callback(null, `${fileName(options.usfmFile)}`);
                     }, (err) => {
                         // console.log("Error: While loading new refs. " + err);
-                        return callback(`${fileName(options.usfmFile)} ${lineCount}`);
+                        return callback(`${fileName(options.usfmFile)}`);
                     });
                 });
             } else if (options.targetDb === 'target') {
@@ -152,16 +152,16 @@ module.exports = {
                         }
                     }
                     db.put(doc).then((response) => {
-                        return callback(null, fileName(options.usfmFile));
+                        return callback(null, fileName(options.usfmFile)+", ");
                     }, (err) => {
-                        return callback(new Error(`${fileName(options.usfmFile)} line no.: ${validLineCount}`));
+                        return callback('Error: While trying to save to DB. ' + err);
                     });
                 });
             }
         });
 
         lineReader.on('error', function (lineReaderErr) {
-            if (lineReaderErr.message === 'not usfm file')
+            if (lineReaderErr.message === 'is not valid usfm file')
                 return callback(new Error(fileName(options.usfmFile)))
             else
                 return callback(new Error(lineReaderErr))
