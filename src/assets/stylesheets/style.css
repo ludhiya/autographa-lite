@@ -5136,6 +5136,8 @@ button.close {
 .modal-header {
   padding: 15px;
   background: #0053A9;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
   border-bottom: 1px solid #e5e5e5; }
   .modal-header:before, .modal-header:after {
     content: " ";
