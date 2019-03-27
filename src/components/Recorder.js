@@ -5,6 +5,7 @@ import { ReactMicPlus } from "react-mic-plus";
 const Modal = require("react-bootstrap/lib/Modal");
 import { observer } from "mobx-react";
 import RaisedButton from "material-ui/RaisedButton";
+import AudioPlayer from "react-h5-audio-player";
 const db = require(`${__dirname}/../util/data-provider`).targetDb();
 const constants = require("../util/constants");
 let saveRec = require("../util/Rec_save_exp");
@@ -13,7 +14,9 @@ let saveRec = require("../util/Rec_save_exp");
 // import Icon from '@material-ui/core/Icon';
 
 // import {version} from "../../package.json";
-var audio,file;
+var audio,
+  file,
+  savedfile = [];
 
 @observer
 class RecorderModal extends React.Component {
@@ -33,11 +36,11 @@ class RecorderModal extends React.Component {
     });
   };
 
-  onStop = (recordedBlob) => {
+  onStop = recordedBlob => {
     console.log("recordedBlob is: ", recordedBlob);
     audio = new Audio(recordedBlob.blobURL);
     file = recordedBlob;
-    console.log(file);
+    console.log(audio);
   };
   closeRecorder = () => {
     AutographaStore.showModalRecorder = false;
@@ -45,10 +48,13 @@ class RecorderModal extends React.Component {
   playrecorder = () => {
     audio.play();
   };
+
   saveRecorder = async e => {
     let book = {};
     const currentTrans = AutographaStore.currentTrans;
     let filesave;
+    savedfile.push(file);
+    console.log(savedfile);
     let doc = await db.get("targetBible");
     doc = doc.targetPath;
     book.bookNumber = AutographaStore.bookId.toString();
@@ -81,7 +87,7 @@ class RecorderModal extends React.Component {
               className="sound-wave"
               onStop={this.onStop}
               strokeColor="#000000"
-              backgroundColor="#FF4081"
+              backgroundColor="#0069D6"
               nonstop={true}
             />
             <RaisedButton
@@ -115,6 +121,25 @@ class RecorderModal extends React.Component {
             >
               <i className="fa fa-play-circle" />
             </RaisedButton>
+          </div>
+          <div>
+            {savedfile.map((file, key) => (
+              <span
+                id={key}
+                key={key}
+                style={{
+                  width: "332px",
+                  textAlign: "center",
+                  display: "inline-block"
+                }}
+              >
+                {file.blobURL}
+                <AudioPlayer
+                src={file.blobURL}
+                onPlay={e => console.log("onPlay")}
+                ></AudioPlayer>
+              </span>
+            ))}
           </div>
         </Modal.Body>
       </Modal>

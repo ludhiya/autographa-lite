@@ -6,7 +6,7 @@ module.exports = {
         console.log("new:", file.blob);
         var book = book.bookName + ".webm";
         filePath += ("/recordings/" + book)
-            fs.writeFile(filePath, file.blob, (err) => {
+            fs.writeFile(filePath, file, (err) => {
                 if(err)
                 console.log(err);
             });
