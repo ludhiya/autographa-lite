@@ -14,9 +14,7 @@ let saveRec = require("../util/Rec_save_exp");
 // import Icon from '@material-ui/core/Icon';
 
 // import {version} from "../../package.json";
-var audio,
-  file,
-  savedfile = [];
+var audio, file, savedfile = [];
 
 @observer
 class RecorderModal extends React.Component {
@@ -53,12 +51,14 @@ class RecorderModal extends React.Component {
     let book = {};
     const currentTrans = AutographaStore.currentTrans;
     let filesave;
+    
     savedfile.push(file);
     console.log(savedfile);
     let doc = await db.get("targetBible");
     doc = doc.targetPath;
     book.bookNumber = AutographaStore.bookId.toString();
     book.bookName = constants.booksList[parseInt(book.bookNumber, 10) - 1];
+    file["bookName"] = book.bookName;
     filesave = await saveRec.recSave(book, file, doc);
     AutographaStore.showModalRecorder = false;
     swal({
@@ -133,7 +133,7 @@ class RecorderModal extends React.Component {
                   display: "inline-block"
                 }}
               >
-                {file.blobURL}
+                {file.bookName}
                 <AudioPlayer
                 src={file.blobURL}
                 onPlay={e => console.log("onPlay")}
