@@ -296,7 +296,7 @@ class SettingsModal extends React.Component {
         return this.getStuffAsync(options).then((res)=> {
             this.setState(prevState => ({
                 successFile: [...prevState.successFile, (res)],
-                successTitle: "Imported_Files"
+                successTitle: AutographaStore.currentTrans["tooltip-import-title"]
               }))
             return res;
         }).catch((err) => {
@@ -304,7 +304,7 @@ class SettingsModal extends React.Component {
            let newErr = err.toString().replace("Error:","");
             this.setState(prevState => ({
                 errorFile: [...prevState.errorFile, (newErr)],
-                errorTitle: "Error_Files"
+                errorTitle: AutographaStore.currentTrans["tooltip-error-title"]
               }))
             return err
         })
@@ -420,7 +420,7 @@ class SettingsModal extends React.Component {
         return that.getStuffAsync(options).then((res)=> {
             this.setState(prevState => ({
                 successFile: [...prevState.successFile, (res)],
-                successTitle: "Imported_Files"
+                successTitle: AutographaStore.currentTrans["tooltip-import-title"]
               }))
             return res;
         }).catch((err) => {
@@ -428,7 +428,7 @@ class SettingsModal extends React.Component {
             let newErr = err.toString().replace("Error:","");
             this.setState(prevState => ({
                 errorFile: [...prevState.errorFile, (newErr)],
-                errorTitle: "Error_Files"
+                errorTitle: AutographaStore.currentTrans["tooltip-error-title"]
               }))
             return err
         })
@@ -1031,22 +1031,18 @@ class SettingsModal extends React.Component {
       </Modal>
         <Modal className="importReport" show={this.state.show} onHide={this.handleClose}>
           <Modal.Header className="head" closeButton>
-            <Modal.Title><i className="fa fa-bar-chart-o"></i>Import Report </Modal.Title>
+            <Modal.Title><FormattedMessage id="modal-import-report" /></Modal.Title>
           </Modal.Header>
           <div className="successTitle">{this.state.successTitle}</div>
-          <Modal.Body className={this.state.successTitle}>
+          <Modal.Body className={this.state.successTitle ? "ImportedFiles" : ""}>
           {this.state.successFile.map((success,key) =>
           <span id={key} key={key}  style={{width:"250px", textAlign:"center", display: "inline-block"}}>{success}</span>)}
           </Modal.Body>
           <div className="errorTitle">{this.state.errorTitle}</div>
-          <Modal.Body className={this.state.errorTitle}>
+          <Modal.Body className={this.state.errorTitle ? "ErrorFiles" : ""}>
           {this.state.errorFile.map((err,key) => <ul key={key}>{err}</ul>)}
           </Modal.Body>
-          <Modal.Footer>
-            <Button className="btn_reportClose" onClick={this.handleClose}>
-              CLOSE
-            </Button>
-          </Modal.Footer>
+          <Modal.Footer />
         </Modal>
         </div>
     )

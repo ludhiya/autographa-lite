@@ -5135,7 +5135,6 @@ button.close {
 
 .modal-header {
   padding: 15px;
-  background: #0053A9;
   border-top-right-radius: 4px;
   border-top-left-radius: 4px;
   border-bottom: 1px solid #e5e5e5; }
@@ -5151,8 +5150,6 @@ button.close {
 .modal-title {
   margin: 0;
   line-height: 1.42857;
-  color: white;
-  text-align: center;
   font-size: 25px;
   padding-bottom: 4px; }
 
@@ -8859,14 +8856,6 @@ body {
 .trans-margin {
   margin-bottom: 61px;
 }
-.swal-report {
-  border: 3px solid white;
-  width: 700px;
-  background: #F8F8F8;
-}
-.swal-button {
-  background-color: #0B82FF;
-}
 .importReport {
   margin-top: 100px;
 }
@@ -8882,20 +8871,18 @@ body {
   margin-top: 15px;
   margin-bottom: 5px;
 }
-.Imported_Files {
+.ImportedFiles {
   max-width: 574px;
   margin-left: 12px;
   max-height: 220px;
   overflow: auto;
-  color: darkgreen;
   background: #F8F8F8;
 }
-.Error_Files {
+.ErrorFiles {
   max-width: 574px;
   margin-left: 12px;
   max-height: 220px;
   overflow: auto;
-  color: red;
   background: #F8F8F8;
 }
 .btn_reportClose {
