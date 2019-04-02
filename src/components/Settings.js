@@ -6,6 +6,7 @@ import AutographaStore from "./AutographaStore";
 import { FormattedMessage } from 'react-intl';
 import Loader from './Loader';
 import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
+import { isNull } from 'util';
 const { dialog, getCurrentWindow } = require('electron').remote;
 const { Tab, Modal, Col, Row, Nav, NavItem } = require('react-bootstrap/lib');
 const refDb = require(`${__dirname}/../util/data-provider`).referenceDb();
@@ -16,6 +17,7 @@ const bibUtil_to_json = require(`${__dirname}/../util/usfm_to_json`);
 const path = require("path");
 const Promise = require("bluebird");
 var fs = Promise.promisifyAll(require('fs'));
+var appPath = path.join(__dirname,'..','..');
 
 @observer
 class SettingsModal extends React.Component {
@@ -41,8 +43,12 @@ class SettingsModal extends React.Component {
       msgId: "",
       filepath: "",
       modalBody: "",
-      title: ""
-
+      title: "",
+      successFile: [],
+      errorFile: [],
+      successTitle:"",
+      errorTitle:"",
+      show: false
     };
     db.get('targetBible').then((doc) => {
       AutographaStore.scriptDirection = doc.langScript.toUpperCase();
@@ -269,9 +275,12 @@ class SettingsModal extends React.Component {
     // let that = this;
     if (this.import_sync_setting() == false) return;
     this.setState({showLoader: true})
-    
     const {langCode, langVersion} = this.state.settingData;
     let inputPath = Array.isArray(this.state.folderPathImport) ?  this.state.folderPathImport : [this.state.folderPathImport];
+    fs.exists(appPath+"/report", function(exists) {
+        if (exists) console.log("Directory Exists")
+        else fs.mkdir(`${appPath}/report`, (err) => {if (err) throw err;});
+    });
     // var files = fs.readdirSync(inputPath[0]);
     Promise.map(inputPath, (file) => {
       // var filePath = path.join(inputPath[0], file);
@@ -283,15 +292,36 @@ class SettingsModal extends React.Component {
           targetDb: 'target',
           scriptDirection: AutographaStore.refScriptDirection
         }
-        return this.getStuffAsync(options);
+        return this.getStuffAsync(options).then((res)=> {
+            this.setState(prevState => ({
+                successFile: [...prevState.successFile, (res)],
+                successTitle: AutographaStore.currentTrans["tooltip-import-title"]
+              }))
+            return res;
+        }).catch((err) => {
+            console.log(err)
+            var errorpath = `${appPath}/report/error.log`;
+            fs.appendFile(errorpath, err+"\n" , (err) => {
+                if (err) {
+                    console.log(err);
+                }else{
+                    console.log("succesfully created error.log file")
+                }
+            });
+           let newErr = err.toString().replace("Error:","");
+            this.setState(prevState => ({
+                errorFile: [...prevState.errorFile, (newErr)],
+                errorTitle: AutographaStore.currentTrans["tooltip-error-title"]
+              }))
+            return err
+        })
       }
-    }).catch((err) => {
-      const currentTrans = AutographaStore.currentTrans;
-      console.log(err)
-      this.setState({showLoader: false});
-      return swal(currentTrans["dynamic-msg-error"], currentTrans["dynamic-msg-imp-error"], "error");
-    }).finally(() => window.location.reload())
-  }
+    }).then(() => {
+        this.setState({showLoader:false});
+        this.setState({show:true});
+        AutographaStore.showModalSettings = false;
+    })//.finally(() => window.location.reload())
+    }
 
   reference_setting() {
     const {bibleName, refVersion, refLangCodeValue, refLangCode, refFolderPath} = this.state.refSetting;
@@ -383,6 +413,10 @@ class SettingsModal extends React.Component {
   saveJsonToDB = (files) => {
     const {bibleName, refVersion, refLangCodeValue, refFolderPath} = this.state.refSetting;
     const that = this;
+    fs.exists(appPath+"/report", function(exists) {
+        if (exists) console.log("Directory Exists")
+        else fs.mkdir(`${appPath}/report`, (err) => {if (err) throw err;});
+    });
     Promise.map(files, (file) => {
       const filePath = path.join((Array.isArray(refFolderPath) ? refFolderPath[0] : refFolderPath), file);
       if (fs.statSync(filePath).isFile() && !file.startsWith('.')) {
@@ -394,27 +428,48 @@ class SettingsModal extends React.Component {
           targetDb: 'refs',
           scriptDirection: AutographaStore.refScriptDirection
         }
-        return that.getStuffAsync(options);
+        return that.getStuffAsync(options).then((res)=> {
+            this.setState(prevState => ({
+                successFile: [...prevState.successFile, (res)],
+                successTitle: AutographaStore.currentTrans["tooltip-import-title"]
+              }))
+            return res;
+        }).catch((err) => {
+            console.log(err)
+            let errorpath = `${appPath}/report/referror.log`;
+            fs.appendFile(errorpath, err+"\n" , (err) => {
+                if (err) {
+                    console.log(err);
+                }else{
+                    console.log("succesfully created referror.log file")
+                }
+            });
+            let newErr = err.toString().replace("Error:","");
+            this.setState(prevState => ({
+                errorFile: [...prevState.errorFile, (newErr)],
+                errorTitle: AutographaStore.currentTrans["tooltip-error-title"]
+              }))
+            return err
+        })
       }
-    }).catch((err) => {
-      const currentTrans = AutographaStore.currentTrans;
-      console.log(err)
-      that.setState({showLoader: false});
-      return swal(currentTrans["dynamic-msg-error"], currentTrans["dynamic-msg-imp-error"], "error");
-    }).finally(() => window.location.reload())
-  }
+    }).then(() => {
+        this.setState({showLoader:false});
+        this.setState({show:true});
+        AutographaStore.showModalSettings = false
+    })//.finally(() => window.location.reload())
+    }
 
-  clickListSettingData = (evt, obj) => {
-    let settingData = Object.assign({}, this.state.settingData);
-        settingData.langCodeValue = evt + " " + obj;
-        settingData.langCode = obj.slice(1,-1);
-    this.setState({ 
-      settingData,
-      visibleList: false
-    });
-  }
+    clickListSettingData = (evt, obj) => {
+        let settingData = Object.assign({}, this.state.settingData);
+            settingData.langCodeValue = evt + " " + obj;
+            settingData.langCode = obj.slice(1,-1);
+        this.setState({
+          settingData,
+          visibleList: false
+        });
+    }
 
-  clickListrefSetting = (evt, obj) => {
+    clickListrefSetting = (evt, obj) => {
     let refSetting = Object.assign({}, this.state.refSetting);
         refSetting.refLangCode = evt + " " + obj;
         refSetting.refLangCodeValue = obj.slice(1,-1);
@@ -422,7 +477,7 @@ class SettingsModal extends React.Component {
       refSetting,
       visibleList: false
     });
-  }
+    }
 
   //Rename
   onReferenceRename = (name, index, e) => {
@@ -566,6 +621,10 @@ class SettingsModal extends React.Component {
   clearList = () => {
     this.hideCodeList();
   }
+  handleClose = () => {
+    this.setState({ show: false });
+    window.location.reload();
+  }
  
   render(){
     var errorStyle = {
@@ -589,7 +648,8 @@ class SettingsModal extends React.Component {
     if(this.state.showLoader){
       return(<Loader />);
     }
-    return (  
+    return (
+    <div>
       <Modal show={show} onHide={closeSetting} id="tab-settings">
         <Modal.Header closeButton>
           <Modal.Title><FormattedMessage id="modal-title-setting" /></Modal.Title>
@@ -988,6 +1048,22 @@ class SettingsModal extends React.Component {
             </Tab.Container>
           </Modal.Body>
       </Modal>
+      <Modal className="importReport" show={this.state.show} onHide={this.handleClose}>
+          <Modal.Header className="head" closeButton>
+            <Modal.Title><FormattedMessage id="modal-import-report" /></Modal.Title>
+          </Modal.Header>
+          <div className="successTitle">{this.state.successTitle}</div>
+          <Modal.Body className={this.state.successTitle ? "ImportedFiles" : ""}>
+          {this.state.successFile.map((success,key) =>
+          <span id={key} key={key} style={{width:"250px", textAlign:"center", display: "inline-block"}}>{success}</span>)}
+          </Modal.Body>
+          <div className="errorTitle">{this.state.errorTitle}</div>
+          <Modal.Body className={this.state.errorTitle ? "ErrorFiles" : ""}>
+          {this.state.errorFile.map((err,key) => <ul key={key}>{err}</ul>)}
+          </Modal.Body>
+          <Modal.Footer />
+        </Modal>
+    </div>
     )
   }
 }
