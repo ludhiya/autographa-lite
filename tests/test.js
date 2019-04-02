@@ -422,6 +422,8 @@ describe('Autographa Test', () => {
             .setValue("#import-file-trans", importfile)
             .waitForExist("#btn-import-trans")
             .click("#btn-import-trans")
+            .keys("Escape")
+            .keys("Escape")
             .waitForVisible("#v1", 20000)
             .getText("#v1").should.eventually.equal(input);
         });
@@ -442,11 +444,12 @@ describe('Autographa Test', () => {
             .setValue("#import-ref-path", importdir)
             .waitForExist("#btn-import-ref")
             .click("#btn-import-ref")
+            .keys("Escape")
         });
 
         it('should check for new reference version', () => {
             return app.client.waitUntilWindowLoaded()
-            .waitForVisible(".ref-drop-down")
+            .waitForVisible(".ref-drop-down",20000)
             .click(".ref-drop-down")
             .selectByIndex(".ref-drop-down", 0)
             .getValue('.ref-drop-down').should.eventually.equal('test_eng_net')
