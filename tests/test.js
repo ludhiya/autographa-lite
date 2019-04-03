@@ -447,9 +447,17 @@ describe('Autographa Test', () => {
             .keys("Escape")
         });
 
+        it('close the app', () => {
+            return app.stop();
+        });
+
+        it('open the app', () => {
+            return app.start();
+        });
+
         it('should check for new reference version', () => {
             return app.client.waitUntilWindowLoaded()
-            .waitForVisible(".ref-drop-down",20000)
+            .waitForVisible(".ref-drop-down", 20000)
             .click(".ref-drop-down")
             .selectByIndex(".ref-drop-down", 0)
             .getValue('.ref-drop-down').should.eventually.equal('test_eng_net')

@@ -276,8 +276,9 @@ class SettingsModal extends React.Component {
     if (this.import_sync_setting() == false) return;
     this.setState({showLoader: true})
     const {langCode, langVersion} = this.state.settingData;
+    let date = new Date();
     let inputPath = Array.isArray(this.state.folderPathImport) ?  this.state.folderPathImport : [this.state.folderPathImport];
-    fs.exists(appPath+"/report", function(exists) {
+    fs.exists(`${appPath}/report/error${date.getDate()}${date.getMonth()}${date.getFullYear()}.log`, function(exists) {
         if (exists) console.log("Directory Exists")
         else fs.mkdir(`${appPath}/report`, (err) => {if (err) throw err;});
     });
@@ -300,7 +301,7 @@ class SettingsModal extends React.Component {
             return res;
         }).catch((err) => {
             console.log(err)
-            var errorpath = `${appPath}/report/error.log`;
+            var errorpath = `${appPath}/report/error${date.getDate()}${date.getMonth()}${date.getFullYear()}.log`;
             fs.appendFile(errorpath, err+"\n" , (err) => {
                 if (err) {
                     console.log(err);
